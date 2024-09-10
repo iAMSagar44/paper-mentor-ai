@@ -1,0 +1,30 @@
+.main {
+    padding: 2rem;
+    text-align: center;
+    font-family: Arial, sans-serif;
+  }
+  
+  .title {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+  
+  .caption {
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: #555;
+  }
+  
+  .descriptionSection {
+    margin-top: 2rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+  }
+  
+  .footer {
+    margin-top: 3rem;
+    text-align: center;
+    color: #888;
+  }
