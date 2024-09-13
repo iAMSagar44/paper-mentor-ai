@@ -8,7 +8,7 @@ import com.azure.core.util.polling.SyncPoller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Service
+@Component
 public class AnalyseDocumentService {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalyseDocumentService.class);
