@@ -9,13 +9,14 @@ The following key dependencies are used in this project:
 - Spring Shell
 - Azure AI Form Recognizer (version 4.1.9)
 - Spring AI PGVector Store Spring Boot Starter
-- Spring AI Ollama Spring Boot Starter (if you want to use a locally installed LLM)
 - Spring AI OpenAI Spring Boot Starter
 
 
 ## Prerequisites
 1. Azure Document Intelligence service is configured in Azure.
 2. A local vector store is set up. This application uses a Postgres database with the pgvector extension.
+3. The following tables need to be created in the Postgres database before running the application. Refer to the [DDL Scripts](#ddl-scripts) section at the end of this document for the necessary scripts.
+       - `research_papers` and `research_papers_metadata`
 
 ## Steps to Run the Application
 1. Clone the repository:
@@ -24,7 +25,7 @@ The following key dependencies are used in this project:
     cd data-loader
     ```
 
-2. Set up environment variables for Azure Document Intelligence:
+2. Set up environment variables for Azure Document Intelligence and OpenAI:
     ```sh
     export DOCUMENT_INTELLIGENCE_ENDPOINT=<your-endpoint>
     export DOCUMENT_INTELLIGENCE_KEY=<your-key>
@@ -79,4 +80,35 @@ OPTIONS
        --help or -h
        help for data load
        [Optional]
+```
+## DDL-scripts
+
+### `research_papers` table
+
+```
+CREATE EXTENSION IF NOT EXISTS vector;
+CREATE EXTENSION IF NOT EXISTS hstore;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE research_papers(
+    id uuid NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY,
+    content text,
+    metadata json,
+    embedding vector(1536)
+);
+
+CREATE INDEX ON research_papers USING HNSW (embedding vector_cosine_ops);
+```
+
+### `research_papers_metadata` table
+
+```
+CREATE TABLE research_papers_metadata(
+    id SERIAL NOT NULL,
+    title varchar(255) NOT NULL,
+    file_name varchar(255) NOT NULL,
+    metadata text,
+    summary text,
+    PRIMARY KEY(id)
+);
 ```
