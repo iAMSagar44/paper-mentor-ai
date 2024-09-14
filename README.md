@@ -28,6 +28,6 @@ The tech stack for this application includes:
 
 - Frontend: Next.js (React framework)
 - Styling: Tailwind CSS for responsive and modern UI
-- Backend: Java and Spring for backend services and API endpoints
+- Backend: Java and Spring Boot for backend services and API endpoints
 - LLM Orchestration: Spring AI for orchestrating calls with LLMs and Vector Store
 - Vector Store: Integration with Postgres vector store for document indexing

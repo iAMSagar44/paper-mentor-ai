@@ -6,8 +6,11 @@ This is a demo project for a Spring Boot backend application.
 
 Before running the application, make sure you have the following:
 
-- Java 17 or higher installed
-- Maven installed
+1. Java 17 or higher installed
+2. Maven installed
+3. A local vector store is set up. This application uses a Postgres database with the pgvector extension.
+4. The following tables need to be present in the Postgres database before running the application. Refer to the README.md file in the `data-loader` project for details around setting up these tables.
+       - `research_papers` and `research_papers_metadata`
 
 ## Getting Started
 
@@ -24,14 +27,22 @@ To run the application, follow these steps:
     ```shell
     cd app/backend
     ```
+3. Set up environment variables for OpenAI:
+    ```sh
+    export SPRING_AI_OPENAI_API_KEY=<your_Spring_AI_OpenAI_api_key>
+    ```
 
-3. Build the project using Maven:
+4. Ensure that your Postgres database with the pgvector extension is running and accessible.
+
+5. Update the `application.properties` file with the specific profile
+
+6. Build the project using Maven:
 
     ```shell
     mvn clean install
     ```
 
-4. Run the application:
+7. Run the application:
 
     ```shell
     mvn spring-boot:run
@@ -43,11 +54,12 @@ The application uses the following key configuration properties:
 
 - `spring.ai.openai.api-key`: The API key for OpenAI integration.
 - `spring.ai.openai.embedding.api-key`: The API key for OpenAI embedding.
+- `spring.ai.openai.chat.options.model`: The Open AI LLM to use.
 - `spring.ai.vectorstore.pgvector.schema-name`: The schema name for PGVector store.
 - `spring.ai.vectorstore.pgvector.table-name`: The table name for PGVector store.
 
 
-Please make sure to configure these properties accordingly in the `application.properties` file.
+Please make sure to configure these properties accordingly in the `application.properties` and the `application-openai.properties` file.
 
 ## Dependencies
 
