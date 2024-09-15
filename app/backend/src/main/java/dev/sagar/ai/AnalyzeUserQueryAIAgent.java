@@ -1,7 +1,6 @@
 package dev.sagar.ai;
 
 import java.util.List;
-
 import org.slf4j.Logger;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.openai.OpenAiChatOptions;
@@ -15,25 +14,19 @@ public class AnalyzeUserQueryAIAgent {
         private final JdbcClient jdbcClient;
 
         public static final String KEYWORDS_TEMPLATE = """
-                        Provide 3 unique keywords from the given keywords list that best represent the user's question.
+                        Given the user question, extract 3 unique keywords to filter the database about article sources.
+                        The keywords can only be from the list: {keywords}.
                         Format the keywords as comma-separated values.
-                        Exclude any stop words and do not answer the question.
-
-                        Keywords List:
-                        ---------------------
-                        {keywords}
-                        ---------------------
-
-                        User Question:
-                        ---------------------
-                        {user_query}
-                        ---------------------
+                        Exclude any stop words.
+                        Only extract the keywords and return it.
+                        DO NOT answer the user question or provide any additional information.
                         """;
 
         AnalyzeUserQueryAIAgent(ChatClient.Builder chatClientBuilder, JdbcClient jdbcClient) {
                 this.chatClient = chatClientBuilder.defaultOptions(OpenAiChatOptions.builder()
-                                .withTemperature(0.2f)
-                                .withMaxTokens(100)
+                                .withModel("gpt-4o-2024-08-06")
+                                .withTemperature(0.1f)
+                                .withMaxTokens(200)
                                 .build())
                                 .build();
                 this.jdbcClient = jdbcClient;
@@ -41,14 +34,14 @@ public class AnalyzeUserQueryAIAgent {
 
         AnalyzedSearchQuery analyzeSearchQuery(String userQuery) {
                 var keywords = this.chatClient.prompt()
-                                .user(userSpec -> userSpec
+                                .system(sysSpec -> sysSpec
                                                 .text(KEYWORDS_TEMPLATE)
-                                                .param("user_query", userQuery)
                                                 .param("keywords", retrieveMetadat()))
+                                .user(userQuery)
                                 .call()
                                 .content();
+
                 var titles = retrieveTitle(keywords);
-                logger.info("Titles: {}", titles);
                 return new AnalyzedSearchQuery(userQuery, keywords, titles);
         }
 

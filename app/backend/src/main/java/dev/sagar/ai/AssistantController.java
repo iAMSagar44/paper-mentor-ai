@@ -21,10 +21,8 @@ public class AssistantController {
 
     @PostMapping(value = "/chat/stream", produces = MediaType.APPLICATION_NDJSON_VALUE)
     public Flux<AssistantResponse> streamingChat(@RequestBody UserQuestion userQuestion) throws IOException {
-        // String refineSearchQuery =
-        // refineSearchQueryAIAgent.refineSearchQuery(userQuestion.question());
-        // logger.debug("Refined search query returned from the AI refiner is: {}",
-        // refineSearchQuery);
-        return aiChatService.generateResponse(userQuestion.question());
+        String refineSearchQuery = refineSearchQueryAIAgent.refineSearchQuery(userQuestion.question());
+        logger.info("Refined search query returned from the AI refiner is: {}", refineSearchQuery);
+        return aiChatService.generateResponse(refineSearchQuery);
     }
 }

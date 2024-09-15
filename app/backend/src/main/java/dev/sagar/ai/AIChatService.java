@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -65,7 +64,7 @@ class AIChatService {
                 logger.info("Generating response for message: {}", userQuestion);
 
                 SystemMessage systemMessage = (SystemMessage) systemPromptTemplate
-                                .createMessage(Map.of("chat_history", retrieveChatHistory()));
+                                .createMessage();
                 logger.debug("System Message: {}", systemMessage.getContent());
 
                 List<Document> documents = retrieveDocumentContent(userQuestion);
@@ -78,10 +77,29 @@ class AIChatService {
                 logger.debug("File names: {}", fileNames);
 
                 Prompt prompt = new Prompt(List.of(systemMessage, userMessage),
-                                OpenAiChatOptions.builder().withTemperature(0.5f).build());
+                                OpenAiChatOptions.builder().withTemperature(0.7f)
+                                                .withModel("gpt-4o-2024-08-06")
+                                                .withFunction("findPapers")
+                                                .withFunction("summarizePaper")
+                                                .withParallelToolCalls(false)
+                                                .build());
                 Flux<ChatResponse> chatResponseStream = chatModel.stream(prompt);
 
                 updateChatMemory(userQuestion, chatResponseStream);
+
+                // Extract tool calls used by the LLM
+                chatResponseStream.map(response -> response.getResult().getOutput().getToolCalls())
+                                .doOnNext(toolCalls -> {
+                                        logger.info("Tool calls: {}", toolCalls);
+                                        boolean hasFindPapers = toolCalls.stream()
+                                                        .anyMatch(toolCall -> "findPapers".equals(toolCall.name()));
+                                        if (hasFindPapers) {
+                                                logger.info("The chat response includes a 'findPapers' tool call.");
+                                        }
+                                })
+                                .onErrorContinue((e, o) -> logger.error("Error occurred while processing chat response",
+                                                e))
+                                .subscribe();
 
                 Flux<String> chatResponse = chatResponseStream
                                 .map(response -> response.getResult().getOutput().getContent())
@@ -98,7 +116,6 @@ class AIChatService {
 
         private void updateChatMemory(String userQuestion, Flux<ChatResponse> chatResponseStream) {
                 logger.info("Updating chat memory with user and assistant messages");
-                messageHistory.add("default", new UserMessage(userQuestion));
 
                 AtomicReference<StringBuilder> stringBufferRef = new AtomicReference<>(new StringBuilder());
                 chatResponseStream.doOnSubscribe(s -> {
@@ -121,8 +138,9 @@ class AIChatService {
         private List<Document> retrieveDocumentContent(String userQuestion) {
                 logger.info("Retrieving documents from the Vector Store");
 
+                // Analyze the user query to extract keywords and titles of documents
                 AnalyzedSearchQuery analyzeSearchQuery = analyzeUserQueryAIAgent.analyzeSearchQuery(userQuestion);
-                logger.info("Analyzed search query: Keywords::{}, Title of documents::{}",
+                logger.info("Analyzed search query: Keywords::{}, \nTitle of documents::{}",
                                 analyzeSearchQuery.keywords(), analyzeSearchQuery.titles());
 
                 if (analyzeSearchQuery.titles().isEmpty()) {
@@ -131,6 +149,9 @@ class AIChatService {
                 analyzeSearchQuery.titles().replaceAll(title -> "'" + title + "'");
                 String filterQueryString = String.format("title in %s", analyzeSearchQuery.titles());
                 logger.info("Filter query string: {}", filterQueryString);
+
+                // Search for similar documents filtered by the titles of the documents in the
+                // vector store
                 return vectorStore
                                 .similaritySearch(SearchRequest.query(userQuestion)
                                                 .withSimilarityThreshold(0.7)
@@ -148,15 +169,6 @@ class AIChatService {
 
                 return new PromptTemplate(userPromptText)
                                 .createMessage(Map.of("question_answer_context", documentContext));
-        }
-
-        private String retrieveChatHistory() {
-                List<Message> memoryMessages = messageHistory.get("default", 5);
-                logger.info("Retrieved chat history: {}", memoryMessages);
-                return (memoryMessages != null) ? memoryMessages.stream()
-                                .filter(m -> m.getMessageType() != MessageType.SYSTEM)
-                                .map(m -> m.getMessageType() + ":" + m.getContent())
-                                .collect(Collectors.joining(System.lineSeparator())) : "";
         }
 
         private Set<String> retrieveFileNames(List<Document> documents) {

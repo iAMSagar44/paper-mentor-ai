@@ -26,24 +26,24 @@ class RefineSearchQueryAIAgent {
 
         public RefineSearchQueryAIAgent(ChatClient.Builder chatClientBuilder, ChatMemory messageHistory) {
                 this.chatClient = chatClientBuilder.defaultOptions(OpenAiChatOptions.builder()
-                                .withTemperature(0.3f)
-                                .withMaxTokens(200)
+                                .withModel("gpt-4o-mini")
+                                .withTemperature(0.1f)
+                                .withMaxTokens(300)
                                 .build())
                                 .build();
                 this.messageHistory = messageHistory;
         }
 
         String refineSearchQuery(String query) {
-                var refinedSearchQuery = chatClient.prompt()
+                var updatedSearchQuery = chatClient.prompt()
                                 .system(systemSpec -> systemSpec
                                                 .text(systemPrompt)
                                                 .param("chat_history", retrieveChatHistory()))
                                 .user(query)
                                 .call()
                                 .content();
-                var updatedQuestion = !refinedSearchQuery.equals("ZERO") ? refinedSearchQuery : query;
-                updateChatMemory(updatedQuestion);
-                return updatedQuestion;
+                updateChatMemory(updatedSearchQuery);
+                return updatedSearchQuery;
 
         }
 
@@ -51,6 +51,7 @@ class RefineSearchQueryAIAgent {
                 messageHistory.add("default", new UserMessage(query));
         }
 
+        // Retrieve the last 5 messages from the chat memory
         private String retrieveChatHistory() {
                 List<Message> memoryMessages = messageHistory.get("default", 5);
                 logger.debug("Retrieved chat history: {}", memoryMessages);
