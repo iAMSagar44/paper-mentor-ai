@@ -37,7 +37,7 @@ export default function Home() {
       </div>
       <div className="mt-8 mx-20">
         <h2 className="text-2xl font-semibold text-black text-center">
-          Important Information:
+          Key Information About This Project:
         </h2>
         <ul className="list-disc list-inside text-lg text-gray-500 mt-4">
           <li>
