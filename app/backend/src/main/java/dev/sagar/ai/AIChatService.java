@@ -90,7 +90,7 @@ class AIChatService {
                 // Extract tool calls used by the LLM
                 chatResponseStream.map(response -> response.getResult().getOutput().getToolCalls())
                                 .doOnNext(toolCalls -> {
-                                        logger.info("Tool calls: {}", toolCalls);
+                                        logger.debug("Tool calls: {}", toolCalls);
                                         boolean hasFindPapers = toolCalls.stream()
                                                         .anyMatch(toolCall -> "findPapers".equals(toolCall.name()));
                                         if (hasFindPapers) {
