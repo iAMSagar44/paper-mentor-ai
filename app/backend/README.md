@@ -1,6 +1,15 @@
 # Backend Application
 
-This is a demo project for a Spring Boot backend application.
+## Introduction
+
+This is a Spring Boot application built using the Spring AI project, designed to facilitate interaction between a Vector Database and Generative AI models.
+
+### Key Features
+
+1. **Retrieval Augmented Generation (RAG):** Enhances response accuracy by fetching relevant information from a vector store before generating answers.
+2. **Function Calling:** Allows the AI to execute specific tasks or retrieve structured data via dynamic function invocations.
+3. **AI Response Chat Streaming:** Delivers real-time, streaming AI responses for a seamless chat experience.
+
 
 ## Prerequisites
 

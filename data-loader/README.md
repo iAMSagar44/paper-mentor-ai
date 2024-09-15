@@ -1,7 +1,7 @@
 # Indexing Documents to a Vector Store with Azure Document Intelligence and Spring AI
 
 ## Overview
-This application uses Azure Document Intelligence to analyze documents and index the data into a vector store using Spring AI.
+This application uses Azure Document Intelligence to analyze documents and index the data into a vector store using Spring AI. It then uses a generative AI model to extract keywords, create a summary from the first two pages of the document and store them in a table.
 
 ## Dependencies
 The following key dependencies are used in this project:
