@@ -1,5 +1,5 @@
 import { MessageProps } from "@/app/lib/definitions";
-import aichat from "../../../../public/ai_human.svg";
+import aichat from "../../../../public/ai.svg";
 import user from "../../../../public/user.svg";
 import Image from "next/image";
 import styles from "./chat.module.css";

@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "./chat.module.css";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
-import { nanoid } from "nanoid";
 import { Message } from "./Message";
 import { MessageProps } from "@/app/lib/definitions";
 import ChatLoading from "./ChatLoading";

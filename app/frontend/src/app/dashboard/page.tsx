@@ -3,15 +3,6 @@ import { headers } from "next/headers";
 import { extractUserName } from "@/app/lib/extractUserName";
 
 export default function Home() {
-  const clientPrincipal: string | null = headers().get("X-MS-CLIENT-PRINCIPAL");
-  let claims;
-  if (!clientPrincipal) {
-    console.log("clientPrincipal is not set in the home page");
-  } else {
-    console.log("clientPrincipal is set in the home page");
-    claims = extractUserName(clientPrincipal);
-  }
-
   return (
     <main className="flex min-h-screen flex-col items-center justify-around p-24 space-y-2">
       <div className="place-self-center font-mono text-sm flex flex-col lg:flex-row lg:space-x-12 space-y-4 lg:space-y-0 items-center">
@@ -27,13 +18,6 @@ export default function Home() {
         <h1 className="text-4xl font-bold text-black place-self-center">
           Retrieval Augmented Generation based Chat Application
         </h1>
-        <div>
-          {claims && (
-            <p className="mx-20 pt-5 text-lg text-gray-500 text-center font-semibold">
-              Welcome {claims["name"]}
-            </p>
-          )}
-        </div>
       </div>
       <div className="mt-8 mx-20">
         <h2 className="text-2xl font-semibold text-black text-center">
