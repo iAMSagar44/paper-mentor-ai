@@ -40,7 +40,7 @@ public class DocumentLoaderCLI {
             var value = """
                     '{"file_name":"%s"}'
                     """.formatted(fileName);
-            String sqlStatement = "DELETE FROM vector_store WHERE metadata::jsonb @>" + value;
+            String sqlStatement = "DELETE FROM research_papers WHERE metadata::jsonb @>" + value;
             final var count = jdbcClient.sql(sqlStatement)
                     .update();
             logger.debug("Number of indexed documents deleted: {}", count);
