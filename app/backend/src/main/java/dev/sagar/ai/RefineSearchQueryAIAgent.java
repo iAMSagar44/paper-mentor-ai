@@ -27,7 +27,7 @@ class RefineSearchQueryAIAgent {
         public RefineSearchQueryAIAgent(ChatClient.Builder chatClientBuilder, ChatMemory messageHistory) {
                 this.chatClient = chatClientBuilder.defaultOptions(OpenAiChatOptions.builder()
                                 .withModel("gpt-4o-mini")
-                                .withTemperature(0.1f)
+                                .withTemperature(0.1)
                                 .withMaxTokens(300)
                                 .build())
                                 .build();

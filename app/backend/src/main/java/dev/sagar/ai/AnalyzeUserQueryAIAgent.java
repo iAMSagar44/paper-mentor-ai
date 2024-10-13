@@ -25,7 +25,7 @@ public class AnalyzeUserQueryAIAgent {
         AnalyzeUserQueryAIAgent(ChatClient.Builder chatClientBuilder, JdbcClient jdbcClient) {
                 this.chatClient = chatClientBuilder.defaultOptions(OpenAiChatOptions.builder()
                                 .withModel("gpt-4o-2024-08-06")
-                                .withTemperature(0.1f)
+                                .withTemperature(0.1)
                                 .withMaxTokens(200)
                                 .build())
                                 .build();

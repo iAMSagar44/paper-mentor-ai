@@ -77,7 +77,7 @@ class AIChatService {
                 logger.debug("File names: {}", fileNames);
 
                 Prompt prompt = new Prompt(List.of(systemMessage, userMessage),
-                                OpenAiChatOptions.builder().withTemperature(0.7f)
+                                OpenAiChatOptions.builder().withTemperature(0.7)
                                                 .withModel("gpt-4o-2024-08-06")
                                                 .withFunction("findPapers")
                                                 .withFunction("summarizePaper")
