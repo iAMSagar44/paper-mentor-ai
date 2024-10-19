@@ -30,8 +30,14 @@ import org.springframework.util.StringUtils;
 @EnableWebSecurity
 public class SecurityConfig {
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(SecurityConfig.class);
+    private final OAuth2LoginSuccessHandler loginSuccessHandler;
+
     @Value("${app.front-end.origin}")
     private String frontEndOrigin;
+
+    public SecurityConfig(OAuth2LoginSuccessHandler loginSuccessHandler) {
+        this.loginSuccessHandler = loginSuccessHandler;
+    }
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -40,7 +46,7 @@ public class SecurityConfig {
                     auth.requestMatchers("/api/chat/stream", "/api/auth/user").permitAll();
                     auth.anyRequest().authenticated();
                 })
-                .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl(frontEndOrigin + "/chat", true))
+                .oauth2Login(oauth2 -> oauth2.successHandler(loginSuccessHandler))
                 .cors(customizer -> {
                     customizer.configurationSource(request -> {
                         var cors = new CorsConfiguration();
