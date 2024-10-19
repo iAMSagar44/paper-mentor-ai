@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -28,6 +29,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import dev.sagar.ai.AnalyzeUserQueryAIAgent.AnalyzedSearchQuery;
+import dev.sagar.conversations.Conversation;
+import dev.sagar.conversations.ConversationService;
 import jakarta.annotation.PostConstruct;
 import reactor.core.publisher.Flux;
 import java.util.concurrent.atomic.AtomicReference;
@@ -39,6 +42,8 @@ class AIChatService {
         private final VectorStore vectorStore;
         private final ChatMemory messageHistory;
         private final AnalyzeUserQueryAIAgent analyzeUserQueryAIAgent;
+        private final TitleGeneratorAIAgent titleGeneratorAIAgent;
+        private final ConversationService conversationService;
 
         @Value("classpath:/prompts/system-prompt-template.st")
         private Resource systemPrompt;
@@ -53,14 +58,19 @@ class AIChatService {
         }
 
         public AIChatService(StreamingChatModel chatModel, VectorStore vectorStore, ChatMemory messageHistory,
-                        AnalyzeUserQueryAIAgent analyzeUserQueryAIAgent) {
+                        AnalyzeUserQueryAIAgent analyzeUserQueryAIAgent, TitleGeneratorAIAgent titleGeneratorAIAgent,
+                        ConversationService conversationService) {
                 this.chatModel = chatModel;
                 this.vectorStore = vectorStore;
                 this.messageHistory = messageHistory;
                 this.analyzeUserQueryAIAgent = analyzeUserQueryAIAgent;
+                this.titleGeneratorAIAgent = titleGeneratorAIAgent;
+                this.conversationService = conversationService;
         }
 
-        Flux<AssistantResponse> generateResponse(String userQuestion) throws IOException {
+        Flux<AssistantResponse> generateResponse(String userQuestion, boolean isNewMessage, String conversationId,
+                        boolean authenticated)
+                        throws IOException {
                 logger.info("Generating response for message: {}", userQuestion);
 
                 SystemMessage systemMessage = (SystemMessage) systemPromptTemplate
@@ -78,7 +88,7 @@ class AIChatService {
 
                 Prompt prompt = new Prompt(List.of(systemMessage, userMessage),
                                 OpenAiChatOptions.builder().withTemperature(0.7)
-                                                .withModel("gpt-4o-2024-08-06")
+                                                .withModel("gpt-4o")
                                                 .withFunction("findPapers")
                                                 .withFunction("summarizePaper")
                                                 .withParallelToolCalls(false)
@@ -101,17 +111,47 @@ class AIChatService {
                                                 e))
                                 .subscribe();
 
+                Conversation conversation = authenticated
+                                ? handleConversation(conversationId, isNewMessage, userQuestion)
+                                : createUnauthenticatedConversation(userQuestion);
+
                 Flux<String> chatResponse = chatResponseStream
                                 .map(response -> response.getResult().getOutput().getContent())
                                 .onErrorComplete();
-                Flux<AssistantResponse> assistantResponse = chatResponse
-                                .map(response -> new AssistantResponse(response, List.of()));
 
-                return assistantResponse
-                                .concatWith(Flux.just(new AssistantResponse("DONE", List.copyOf(fileNames))))
+                return chatResponse
+                                .map(response -> new AssistantResponse(response, conversation.getTitle(),
+                                                conversation.getId(), List.of()))
+                                .concatWith(Flux.just(new AssistantResponse("DONE", conversation.getTitle(),
+                                                conversation.getId(), List.copyOf(fileNames))))
                                 .onBackpressureBuffer()
                                 .delayElements(Duration.ofMillis(20))
                                 .onErrorComplete();
+        }
+
+        private Conversation createUnauthenticatedConversation(String userQuestion) {
+                Conversation conversation = new Conversation();
+                conversation.setTitle(generateConversationTitle(userQuestion));
+                conversation.setId(UUID.randomUUID());
+                return conversation;
+        }
+
+        private Conversation handleConversation(String conversationId, boolean isNewMessage, String userMessage) {
+                Conversation conversation;
+                if (isNewMessage) {
+                        String title = generateConversationTitle(userMessage);
+                        logger.info("Title generated: {}", title);
+                        conversation = conversationService.saveConversation(title);
+                } else {
+                        logger.info("Retrieving conversation with id: {}", conversationId);
+                        conversation = conversationService.findConversationById(UUID.fromString(conversationId));
+                }
+                return conversation;
+        }
+
+        private String generateConversationTitle(String userMessage) {
+                logger.info("Generating title for the user message");
+                return titleGeneratorAIAgent.generateTitle(userMessage);
         }
 
         private void updateChatMemory(String userQuestion, Flux<ChatResponse> chatResponseStream) {
