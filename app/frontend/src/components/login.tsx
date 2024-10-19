@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Github, Laptop } from "lucide-react";
+import { Laptop } from "lucide-react";
 import Link from "next/link";
 
 export function Login() {
@@ -31,14 +31,14 @@ export function Login() {
             Login with Microsoft
           </Button>
         </Link>
-        <Link
+        {/* <Link
           href={`${process.env.NEXT_PUBLIC_BACK_END_BASE_URL}/oauth2/authorization/github`}
         >
           <Button variant="outline" disabled={isLoading}>
             <Github className="mr-2 h-4 w-4" />
             Login with GitHub
           </Button>
-        </Link>
+        </Link> */}
       </CardContent>
       <CardFooter>
         <p className="text-sm text-muted-foreground">

@@ -78,7 +78,7 @@ public class ConversationService {
                 .getAuthentication().getPrincipal();
         logger.debug("Authenticated user is: {}", (String) oauth2User.getAttribute("email"));
         logger.debug("User Attributes: {}", oauth2User.getAttributes());
-        User user = userRepository.findByEmail((String) oauth2User.getAttribute("email")).stream().findFirst()
+        User user = userRepository.findByEmail((String) oauth2User.getAttribute("email"))
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return user;
     }
