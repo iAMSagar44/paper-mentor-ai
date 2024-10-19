@@ -1,15 +1,8 @@
 import React from "react";
-import styles from "./page.module.css";
-import StreamChat from "@/app/ui/chat-landing/chat";
+import StreamChat from "../ui/chat-landing/chat-interface";
 
 const Home = () => {
-    return (
-        <main className={styles.main}>
-            <div className={styles.container}>
-                <StreamChat />
-            </div>
-        </main>
-    );
+  return <StreamChat />;
 };
 
 export default Home;
