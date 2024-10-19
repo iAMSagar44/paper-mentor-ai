@@ -121,6 +121,7 @@ const StreamChat = () => {
             ]);
             setCitations([]);
             setCurrentChatId("");
+            setNewChat(true);
           }
         }
         if (response.status === 401) {
